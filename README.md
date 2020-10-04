@@ -27,6 +27,6 @@ There you go, you can now open & edit the project. Enjoy!
 
 # Contribute 
 
-Fork and add the new features and send a pull request . 
+Fork and add new features and send a pull request . 
 
 Happy Hacktoberfest !😉
