@@ -8,7 +8,7 @@
 # Download & Install
 First, clone the repository with the 'clone' command, or just download the zip.
 ```C
-$ git clone git@github.com:sainiteshb/NASA-APod-flutter.git
+$ git clone git@github.com:sainiteshb/NASA-Apod-flutter.git
 ```
 Then, download either Android Studio or Visual Studio Code, with their respective Flutter editor plugins.
 
