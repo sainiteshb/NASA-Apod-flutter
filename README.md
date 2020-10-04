@@ -12,6 +12,6 @@ $ git clone git@github.com:jesusrp98/space-curiosity.git
 ```
 Then, download either Android Studio or Visual Studio Code, with their respective Flutter editor plugins.
 
-Install dependencies from pubspec.yaml by running flutter ```C packages get ``` from the project root \
+Install dependencies from pubspec.yaml by running flutter ``` packages get ``` from the project root \
 
 There you go, you can now open & edit the project. Enjoy!
