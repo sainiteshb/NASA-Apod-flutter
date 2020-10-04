@@ -3,7 +3,7 @@
 
 
 # Screenshot
-<img src="https://github.com/sainiteshb/sainiteshb/blob/master/assets/hello.gif" alt="hello-gif" width="100px" height="300px" >
+<img src="https://github.com/sainiteshb/NASA-Apod-flutter/blob/main/screenshots/Screenshot_1601807711.png" width="100px" height="300px" >
 
 # Download & Install
 First, clone the repository with the 'clone' command, or just download the zip.
@@ -12,6 +12,6 @@ $ git clone git@github.com:jesusrp98/space-curiosity.git
 ```
 Then, download either Android Studio or Visual Studio Code, with their respective Flutter editor plugins.
 
-Install dependencies from pubspec.yaml by running flutter ``` packages get ``` from the project root \
+Install dependencies from pubspec.yaml by running flutter ``` packages get ``` from the project root .
 
 There you go, you can now open & edit the project. Enjoy!
