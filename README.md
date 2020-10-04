@@ -2,7 +2,7 @@
  NASA Apod shows the astronomy picture of the day by fetching the data from the Official NASA API . You Can view different date's APOD. 
 
 # Screenshot
-<img src="https://github.com/sainiteshb/NASA-Apod-flutter/blob/main/screenshots/Screenshot_1601807711.png" width="260px" height="400px" >
+<img src="https://github.com/sainiteshb/NASA-Apod-flutter/blob/main/screenshots/Screenshot_1601807711.png" width="260px" height="420px" >
 
 # Download & Install
 First, clone the repository with the 'clone' command, or just download the zip.
