@@ -1,5 +1,5 @@
 # NASA-Apod-flutter
-
+ NASA Apod shows the astronomy picture of the day by fetching the data from the Official NASA API .
 
 
 # Screenshot
@@ -14,4 +14,13 @@ Then, download either Android Studio or Visual Studio Code, with their respectiv
 
 Install dependencies from pubspec.yaml by running flutter ``` packages get ``` from the project root .
 
+Change the Api key in the ``` api_key.dart ```file . Get your apikey from here for free [Official NASA API](https://api.nasa.gov/)
+
 There you go, you can now open & edit the project. Enjoy!
+
+# Packages Used
+
+* [http:](https://pub.dev/packages/http)  Http requests
+* [shimmer:](https://pub.dev/packages/shimmer)  Shimmer effect
+* [cached_network_image:](https://pub.dev/packages/cached_network_image) Image Cache
+* [google_fonts:](https://pub.dev/packages/google_fonts) Google fonts
