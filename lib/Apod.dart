@@ -17,25 +17,25 @@ class _ApodPageState extends State<ApodPage> {
   String imageInfo = "loading Information";
   String imageTitle = 'loading Title';
   String mediaType = "mediaType";
-  String year;
-  String month;
-  String day;
+  int year;
+  int month;
+  int day;
   DateTime dateTime;
   Future<void> datePicker(BuildContext context) async {
     DateTime dateTime = await showDatePicker(
         context: context,
-        initialDate: DateTime.now(),
+        initialDate: DateTime(year, month, day, 0, 0),
         firstDate: DateTime(1995, 6, 16, 0, 0),
         lastDate: DateTime.now(),
         cancelText: "Cancel",
         confirmText: "OK");
     if (dateTime != null) {
       setState(() {
-        year = dateTime.year.toString();
-        month = dateTime.month.toString();
-        day = dateTime.day.toString();
+        year = dateTime.year;
+        month = dateTime.month;
+        day = dateTime.day;
       });
-      getApodData(year: year, month: month, day: day)
+      getApodData(year: year.toString(), month: month.toString(), day: day.toString())
           .then(displayApod)
           .catchError((error) => print(error));
     }
@@ -74,10 +74,10 @@ class _ApodPageState extends State<ApodPage> {
   initState() {
     super.initState();
     dateTime = DateTime.now();
-    year = dateTime.year.toString();
-    month = dateTime.month.toString();
-    day = dateTime.day.toString();
-    getApodData(year: year, month: month, day: day)
+    year = dateTime.year;
+    month = dateTime.month;
+    day = dateTime.day;
+    getApodData(year: year.toString(), month: month.toString(), day: day.toString())
         .then((response) => displayApod(response))
         .catchError((error) => print(error));
   }
@@ -125,7 +125,7 @@ class _ApodPageState extends State<ApodPage> {
                       Container(
                         child: Padding(
                           padding: const EdgeInsets.all(3.0),
-                          child: Text(day + "-" + month + "-" + year),
+                          child: Text('$day-$month-$year'),
                         ),
                         decoration:
                             BoxDecoration(border: Border.all(width: 1.5)),
