@@ -1,6 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import 'package:http/http.dart';
+import 'package:provider/provider.dart';
 import 'dart:convert';
 import 'package:shimmer/shimmer.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -35,7 +37,10 @@ class _ApodPageState extends State<ApodPage> {
         month = dateTime.month;
         day = dateTime.day;
       });
-      getApodData(year: year.toString(), month: month.toString(), day: day.toString())
+      getApodData(
+              year: year.toString(),
+              month: month.toString(),
+              day: day.toString())
           .then(displayApod)
           .catchError((error) => print(error));
     }
@@ -77,13 +82,16 @@ class _ApodPageState extends State<ApodPage> {
     year = dateTime.year;
     month = dateTime.month;
     day = dateTime.day;
-    getApodData(year: year.toString(), month: month.toString(), day: day.toString())
+    getApodData(
+            year: year.toString(), month: month.toString(), day: day.toString())
         .then((response) => displayApod(response))
         .catchError((error) => print(error));
   }
 
   @override
   Widget build(BuildContext context) {
+    var settings = Provider.of<Box<dynamic>>(context);
+    bool isDarkTheme = settings.get('isDarkTheme');
     return SafeArea(
       child: Scaffold(
         body: SingleChildScrollView(
@@ -138,7 +146,14 @@ class _ApodPageState extends State<ApodPage> {
                       ),
                       Icon(
                         Icons.calendar_today,
-                      )
+                      ),
+                      IconButton(
+                          icon: Icon(isDarkTheme
+                              ? Icons.brightness_7
+                              : Icons.brightness_2),
+                          onPressed: () {
+                            settings.put('isDarkTheme', !isDarkTheme);
+                          })
                     ],
                   ),
                 ),

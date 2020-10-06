@@ -24,6 +24,10 @@ There you go, you can now open & edit the project. Enjoy!
 * [shimmer:](https://pub.dev/packages/shimmer)  Shimmer effect
 * [cached_network_image:](https://pub.dev/packages/cached_network_image) Image Cache
 * [google_fonts:](https://pub.dev/packages/google_fonts) Google fonts
+* [provider:](https://pub.dev/packages/provider) Provider for theme
+* [path_provider:](https://pub.dev/packages/path_provider) App doc dir
+* [hive_flutter:](https://pub.dev/packages/hive_flutter) Listenable hive box
+* [hive:](https://pub.dev/packages/hive) Storing theme mode
 
 # Contribute 
 
