@@ -34,7 +34,6 @@ There you go, you can now open & edit the project. Enjoy!
 Fork and add new features and send a pull request . 
 Some ideas to contribute
 * caching the http response to reduce the API calls.
-* Adding swipe option to view previous days APOD
 
 
 Happy Hacktoberfest !😉
