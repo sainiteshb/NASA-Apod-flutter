@@ -2,12 +2,12 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart';
+import 'package:nasa_apod/models/apodModel.dart';
+import 'package:nasa_apod/providers/apod_provider.dart';
 import 'package:provider/provider.dart';
 import 'dart:convert';
 import 'package:shimmer/shimmer.dart';
 import 'package:google_fonts/google_fonts.dart';
-
-import 'api_key.dart';
 
 class ApodPage extends StatefulWidget {
   @override
@@ -15,199 +15,197 @@ class ApodPage extends StatefulWidget {
 }
 
 class _ApodPageState extends State<ApodPage> {
-  String imageUrl;
-  String imageInfo = "loading Information";
-  String imageTitle = 'loading Title';
-  String mediaType = "mediaType";
-  int year;
-  int month;
-  int day;
-  DateTime dateTime;
   Future<void> datePicker(BuildContext context) async {
     DateTime dateTime = await showDatePicker(
         context: context,
-        initialDate: DateTime(year, month, day, 0, 0),
+        initialDate: Provider.of<ApodProvider>(context, listen: false).date,
         firstDate: DateTime(1995, 6, 16, 0, 0),
         lastDate: DateTime.now(),
         cancelText: "Cancel",
         confirmText: "OK");
     if (dateTime != null) {
-      setState(() {
-        year = dateTime.year;
-        month = dateTime.month;
-        day = dateTime.day;
-      });
-      getApodData(
-              year: year.toString(),
-              month: month.toString(),
-              day: day.toString())
-          .then(displayApod)
-          .catchError((error) => print(error));
-    }
-  }
-
-  //  method to fetch the data from NASA Api
-  // change the apikey
-  Future<Response> getApodData({String year, String month, String day}) {
-    String date = year + "-" + month + "-" + day;
-    String url = Uri.encodeFull(
-        "https://api.nasa.gov/planetary/apod?date=$date&hd=true&api_key=$apiKey");
-    Future<Response> response = get(url);
-    return response;
-  }
-
-  displayApod(Response response) {
-    Map<String, dynamic> apoddetails = json.decode(response.body);
-
-    setState(() {
-      imageInfo = apoddetails['explanation'] == null
-          ? "Data is not yet available , select another date "
-          : apoddetails["explanation"];
-      imageTitle = apoddetails['title'] == null
-          ? "Data is not available"
-          : apoddetails['title'];
-    });
-    mediaType = apoddetails['media_type'];
-    if (mediaType == "image") {
-      imageUrl = apoddetails['hdurl'];
-    } else {
-      imageUrl = null;
+      var apodProvider = Provider.of<ApodProvider>(context, listen: false);
+      apodProvider.changeDate(dateTime);
     }
   }
 
   @override
   initState() {
     super.initState();
-    dateTime = DateTime.now();
-    year = dateTime.year;
-    month = dateTime.month;
-    day = dateTime.day;
-    getApodData(
-            year: year.toString(), month: month.toString(), day: day.toString())
-        .then((response) => displayApod(response))
-        .catchError((error) => print(error));
   }
 
   @override
   Widget build(BuildContext context) {
     var settings = Provider.of<Box<dynamic>>(context);
+    var apodProvider = Provider.of<ApodProvider>(context);
     bool isDarkTheme = settings.get('isDarkTheme');
     return SafeArea(
       child: Scaffold(
-        body: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                alignment: Alignment.center,
-                height: 100.0,
-                width: MediaQuery.of(context).size.width,
-                decoration: BoxDecoration(
-                  color: Color(0xff121212),
-                  borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(30),
-                    bottomRight: Radius.circular(30),
-                  ),
-                ),
-                child: Text('Astronomy Picture of the Day',
-                    style: GoogleFonts.poppins(
-                      textStyle: TextStyle(color: Colors.white, fontSize: 20.0),
-                    )),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 5),
-                child: Text(imageTitle,
-                    style: GoogleFonts.montserrat(
-                      textStyle: TextStyle(
-                        fontWeight: FontWeight.w500,
-                        fontSize: 30.0,
-                      ),
-                    )),
-              ),
-              GestureDetector(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 0, 20.0, 0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: <Widget>[
-                      Container(
-                        child: Padding(
-                          padding: const EdgeInsets.all(3.0),
-                          child: Text('$day-$month-$year'),
-                        ),
-                        decoration:
-                            BoxDecoration(border: Border.all(width: 1.5)),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.only(left: 10),
-                      ),
-                      Text(
-                        'Select Date',
-                      ),
-                      Icon(
-                        Icons.calendar_today,
-                      ),
-                      IconButton(
-                          icon: Icon(isDarkTheme
-                              ? Icons.brightness_7
-                              : Icons.brightness_2),
-                          onPressed: () {
-                            settings.put('isDarkTheme', !isDarkTheme);
-                          })
-                    ],
-                  ),
-                ),
-                onTap: () async => await datePicker(context),
-              ),
-              SizedBox(
-                height: 10.0,
-              ),
-              Container(
-                padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(6.0),
-                  child: imageUrl != null
-                      ? CachedNetworkImage(
-                          imageUrl: imageUrl,
-                        )
-                      : mediaType == "video"
-                          ? Text("image is not available")
-                          : Container(
-                              width: MediaQuery.of(context).size.width,
-                              padding: EdgeInsets.symmetric(
-                                  vertical: 10.0, horizontal: 10.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
+        appBar: _buildAppBar(),
+        body: PageView.builder(
+          onPageChanged: (index) {
+            apodProvider
+                .changeDate(DateTime.now().subtract(Duration(days: index)));
+          },
+          itemBuilder: (BuildContext context, int index) {
+            return FutureBuilder<Response>(
+              future: apodProvider.getApodData(),
+              builder: (BuildContext context,
+                  AsyncSnapshot<Response> responseSnapshot) {
+                Widget widgetToReturn =
+                    Center(child: CircularProgressIndicator());
+                if (responseSnapshot.connectionState == ConnectionState.done) {
+                  if (responseSnapshot.hasData) {
+                    // We should probably also check for status code of the response.
+                    var apodData =
+                        Apod.fromMap(json.decode(responseSnapshot.data.body));
+                    widgetToReturn = SingleChildScrollView(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          _buildApodTitle(apodData),
+                          GestureDetector(
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(0, 0, 20.0, 0),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: <Widget>[
                                   Container(
-                                    height: 300.0,
-                                    child: Shimmer.fromColors(
-                                      baseColor: Colors.grey[300],
-                                      highlightColor: Colors.grey[100],
-                                      child: Container(
-                                        color: Colors.white,
-                                      ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(3.0),
+                                      child: Text(
+                                          '${apodProvider.day}-${apodProvider.month}-${apodProvider.year}'),
                                     ),
+                                    decoration: BoxDecoration(
+                                        border: Border.all(width: 1.5)),
                                   ),
+                                  Padding(
+                                    padding: EdgeInsets.only(left: 10),
+                                  ),
+                                  Text(
+                                    'Select Date',
+                                  ),
+                                  Icon(
+                                    Icons.calendar_today,
+                                  ),
+                                  IconButton(
+                                      icon: Icon(isDarkTheme
+                                          ? Icons.brightness_7
+                                          : Icons.brightness_2),
+                                      onPressed: () {
+                                        settings.put(
+                                            'isDarkTheme', !isDarkTheme);
+                                      })
                                 ],
                               ),
                             ),
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.only(bottom: 20),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                child: Text(imageInfo,
-                    style: GoogleFonts.poppins(
-                      textStyle: TextStyle(
-                        fontWeight: FontWeight.w500,
-                        fontSize: 20.0,
+                            onTap: () async => await datePicker(context),
+                          ),
+                          SizedBox(
+                            height: 10.0,
+                          ),
+                          _buildApodImage(apodData, context),
+                          Padding(
+                            padding: EdgeInsets.only(bottom: 20),
+                          ),
+                          _buildApodInfo(apodData),
+                        ],
                       ),
-                    )),
-              ),
-            ],
+                    );
+                  }
+                }
+                return widgetToReturn;
+              },
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  // This method builds the AppBar.
+  AppBar _buildAppBar() {
+    return AppBar(
+      backgroundColor: Color(0xff121212),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(30),
+          bottomRight: Radius.circular(30),
+        ),
+      ),
+      toolbarHeight: 100.0,
+      centerTitle: true,
+      title: Text(
+        'Astronomy Picture of the Day',
+        style: GoogleFonts.poppins(
+          textStyle: TextStyle(color: Colors.white, fontSize: 20.0),
+        ),
+      ),
+    );
+  }
+
+  // This method builds the title of current apod.
+  Padding _buildApodTitle(Apod apodData) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 5),
+      child: Text(
+        apodData.imageTitle,
+        style: GoogleFonts.montserrat(
+          textStyle: TextStyle(
+            fontWeight: FontWeight.w500,
+            fontSize: 30.0,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // This method builds image of current apod if present.
+  Container _buildApodImage(Apod apodData, BuildContext context) {
+    return Container(
+      padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(6.0),
+        child: apodData.imageUrl != null
+            ? CachedNetworkImage(
+                imageUrl: apodData.imageUrl,
+              )
+            : apodData.mediaType == "video"
+                ? Text("image is not available")
+                : Container(
+                    width: MediaQuery.of(context).size.width,
+                    padding:
+                        EdgeInsets.symmetric(vertical: 10.0, horizontal: 10.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          height: 300.0,
+                          child: Shimmer.fromColors(
+                            baseColor: Colors.grey[300],
+                            highlightColor: Colors.grey[100],
+                            child: Container(
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+      ),
+    );
+  }
+
+  // This method builds the information widget of current apod.
+  Padding _buildApodInfo(Apod apodData) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+      child: Text(
+        apodData.imageInfo,
+        style: GoogleFonts.poppins(
+          textStyle: TextStyle(
+            fontWeight: FontWeight.w500,
+            fontSize: 20.0,
           ),
         ),
       ),
