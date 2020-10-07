@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:nasa_apod/providers/apod_provider.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -25,8 +26,17 @@ Future _initApp() async {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Provider<Box<dynamic>>(
-      create: (context) => Hive.box('settings'),
+    return MultiProvider(
+      providers: [
+        Provider<Box<dynamic>>(
+          create: (context) => Hive.box('settings'),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => ApodProvider(
+            date: DateTime.now(),
+          ),
+        ),
+      ],
       builder: (BuildContext context, Widget child) {
         return ValueListenableBuilder(
           valueListenable: Provider.of<Box<dynamic>>(context).listenable(),
