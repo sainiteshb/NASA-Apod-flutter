@@ -36,4 +36,4 @@ Some ideas to contribute
 * caching the http response to reduce the API calls.
 
 
-Happy Hacktoberfest !😉
+Happy Hacktoberfest ! 😉
