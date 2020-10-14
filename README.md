@@ -32,8 +32,6 @@ There you go, you can now open & edit the project. Enjoy!
 # Contribute 
 
 Fork and add new features and send a pull request . 
-Some ideas to contribute
-* caching the http response to reduce the API calls.
 
 
 Happy Hacktoberfest ! 😉
