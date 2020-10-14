@@ -48,73 +48,80 @@ class _ApodPageState extends State<ApodPage> {
                 .changeDate(DateTime.now().subtract(Duration(days: index)));
           },
           itemBuilder: (BuildContext context, int index) {
-            return FutureBuilder<Response>(
-              future: apodProvider.getApodData(),
-              builder: (BuildContext context,
-                  AsyncSnapshot<Response> responseSnapshot) {
-                Widget widgetToReturn =
-                    Center(child: CircularProgressIndicator());
-                if (responseSnapshot.connectionState == ConnectionState.done) {
-                  if (responseSnapshot.hasData) {
-                    // We should probably also check for status code of the response.
-                    var apodData =
-                        Apod.fromMap(json.decode(responseSnapshot.data.body));
-                    widgetToReturn = SingleChildScrollView(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          _buildApodTitle(apodData),
-                          GestureDetector(
-                            child: Padding(
-                              padding: const EdgeInsets.fromLTRB(0, 0, 20.0, 0),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: <Widget>[
-                                  Container(
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(3.0),
-                                      child: Text(
-                                          '${apodProvider.day}-${apodProvider.month}-${apodProvider.year}'),
-                                    ),
-                                    decoration: BoxDecoration(
-                                        border: Border.all(width: 1.5)),
+            return FutureBuilder<Box>(
+              future: Hive.openBox("cachedResponses"),
+              builder: (BuildContext context, AsyncSnapshot<Box> boxSnapshot) { 
+                Box box = boxSnapshot.data;
+                return FutureBuilder<String>(
+                  initialData: box?.get(apodProvider.getUrl()),
+                  future: apodProvider.getApodData(),
+                  builder: (BuildContext context,
+                      AsyncSnapshot<String> responseSnapshot) {
+                    Widget widgetToReturn =
+                        Center(child: CircularProgressIndicator());
+                    if (responseSnapshot.connectionState == ConnectionState.done) {
+                      if (responseSnapshot.hasData) {
+                        // We should probably also check for status code of the response.
+                        var apodData =
+                            Apod.fromMap(json.decode(responseSnapshot.data));
+                        widgetToReturn = SingleChildScrollView(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              _buildApodTitle(apodData),
+                              GestureDetector(
+                                child: Padding(
+                                  padding: const EdgeInsets.fromLTRB(0, 0, 20.0, 0),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: <Widget>[
+                                      Container(
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(3.0),
+                                          child: Text(
+                                              '${apodProvider.day}-${apodProvider.month}-${apodProvider.year}'),
+                                        ),
+                                        decoration: BoxDecoration(
+                                            border: Border.all(width: 1.5)),
+                                      ),
+                                      Padding(
+                                        padding: EdgeInsets.only(left: 10),
+                                      ),
+                                      Text(
+                                        'Select Date',
+                                      ),
+                                      Icon(
+                                        Icons.calendar_today,
+                                      ),
+                                      IconButton(
+                                          icon: Icon(isDarkTheme
+                                              ? Icons.brightness_7
+                                              : Icons.brightness_2),
+                                          onPressed: () {
+                                            settings.put(
+                                                'isDarkTheme', !isDarkTheme);
+                                          })
+                                    ],
                                   ),
-                                  Padding(
-                                    padding: EdgeInsets.only(left: 10),
-                                  ),
-                                  Text(
-                                    'Select Date',
-                                  ),
-                                  Icon(
-                                    Icons.calendar_today,
-                                  ),
-                                  IconButton(
-                                      icon: Icon(isDarkTheme
-                                          ? Icons.brightness_7
-                                          : Icons.brightness_2),
-                                      onPressed: () {
-                                        settings.put(
-                                            'isDarkTheme', !isDarkTheme);
-                                      })
-                                ],
+                                ),
+                                onTap: () async => await datePicker(context),
                               ),
-                            ),
-                            onTap: () async => await datePicker(context),
+                              SizedBox(
+                                height: 10.0,
+                              ),
+                              _buildApodImage(apodData, context),
+                              Padding(
+                                padding: EdgeInsets.only(bottom: 20),
+                              ),
+                              _buildApodInfo(apodData),
+                            ],
                           ),
-                          SizedBox(
-                            height: 10.0,
-                          ),
-                          _buildApodImage(apodData, context),
-                          Padding(
-                            padding: EdgeInsets.only(bottom: 20),
-                          ),
-                          _buildApodInfo(apodData),
-                        ],
-                      ),
-                    );
-                  }
-                }
-                return widgetToReturn;
+                        );
+                      }
+                    }
+                    return widgetToReturn;
+                  },
+                );
               },
             );
           },
@@ -133,7 +140,7 @@ class _ApodPageState extends State<ApodPage> {
           bottomRight: Radius.circular(30),
         ),
       ),
-      toolbarHeight: 100.0,
+      //toolbarHeight: 100.0,
       centerTitle: true,
       title: Text(
         'Astronomy Picture of the Day',
