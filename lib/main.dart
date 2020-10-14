@@ -18,6 +18,7 @@ Future _initApp() async {
   final appDocumentDirectory = await getApplicationDocumentsDirectory();
   Hive.init(appDocumentDirectory.path);
   var settingsBox = await Hive.openBox('settings');
+  var cachedDataBox = await Hive.openBox('cachedResponses');
   if (settingsBox.get('isDarkTheme') == null) {
     settingsBox.put('isDarkTheme', false);
   }

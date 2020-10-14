@@ -5,13 +5,18 @@ import '../api_key.dart';
 
 class ApodProvider extends ChangeNotifier {
   DateTime date;
+  final Box box = Hive.box("cachedResponses");
+  String cachedData;
 
   ApodProvider({@required this.date});
 
   void changeDate(DateTime newDate) {
     date = newDate;
+    getCached();
     notifyListeners();
   }
+
+  void getCached() => cachedData = box.get(getUrl());
 
   get year => date.year;
   get month => date.month;
@@ -29,7 +34,6 @@ class ApodProvider extends ChangeNotifier {
   Future<String> getApodData() async {
     String url = getUrl();
     Response response = await get(url);
-    Box box = await Hive.openBox("cachedResponses");
     box.put(url, response.body);
     return response.body;
   }
