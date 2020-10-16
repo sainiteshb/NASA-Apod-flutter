@@ -32,11 +32,6 @@ class MyApp extends StatelessWidget {
         Provider<Box<dynamic>>(
           create: (context) => Hive.box('settings'),
         ),
-        ChangeNotifierProvider(
-          create: (context) => ApodProvider(
-            date: DateTime.now(),
-          ),
-        ),
       ],
       builder: (BuildContext context, Widget child) {
         return ValueListenableBuilder(

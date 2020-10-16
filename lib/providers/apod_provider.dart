@@ -4,37 +4,34 @@ import 'package:hive/hive.dart';
 import '../api_key.dart';
 
 class ApodProvider extends ChangeNotifier {
-  DateTime date;
+  final DateTime date;
+  String responseData;
   final Box box = Hive.box("cachedResponses");
-  String cachedData;
 
   ApodProvider({@required this.date});
 
-  void changeDate(DateTime newDate) {
-    date = newDate;
-    getCached();
-    notifyListeners();
-  }
+  get year => date.year.toString();
+  get month => date.month.toString();
+  get day => date.day.toString();
 
-  void getCached() => cachedData = box.get(getUrl());
-
-  get year => date.year;
-  get month => date.month;
-  get day => date.day;
+  String getDateString() => "$year-$month-$day";
 
   String getUrl() {
-    String dateString = date.year.toString() +
-        "-" +
-        date.month.toString() +
-        "-" +
-        date.day.toString();
+    String dateString = getDateString();
     return Uri.encodeFull("https://api.nasa.gov/planetary/apod?date=$dateString&hd=true&api_key=$apiKey");
   }
 
-  Future<String> getApodData() async {
+  void getApodData() async {
     String url = getUrl();
-    Response response = await get(url);
-    box.put(url, response.body);
-    return response.body;
+    responseData = box.get(url);
+    if (responseData != null) notifyListeners();
+    try {
+      Response response = await get(url);
+      responseData = response.body;
+      box.put(url, responseData);
+      if (responseData != null || responseData.isNotEmpty) notifyListeners();
+    } catch(e) {
+      print(e);
+    }
   }
 }

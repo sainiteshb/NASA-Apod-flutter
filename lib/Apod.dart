@@ -1,7 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
-import 'package:http/http.dart';
 import 'package:nasa_apod/models/apodModel.dart';
 import 'package:nasa_apod/providers/apod_provider.dart';
 import 'package:provider/provider.dart';
@@ -9,64 +8,44 @@ import 'dart:convert';
 import 'package:shimmer/shimmer.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class ApodPage extends StatefulWidget {
-  @override
-  _ApodPageState createState() => _ApodPageState();
-}
+class ApodPage extends StatelessWidget {
 
-class _ApodPageState extends State<ApodPage> {
+  final PageController _pageController = PageController();
+
   Future<void> datePicker(BuildContext context) async {
+    final currentDate = DateTime.now();
     DateTime dateTime = await showDatePicker(
         context: context,
         initialDate: Provider.of<ApodProvider>(context, listen: false).date,
         firstDate: DateTime(1995, 6, 16, 0, 0),
-        lastDate: DateTime.now(),
+        lastDate: currentDate,
         cancelText: "Cancel",
         confirmText: "OK");
     if (dateTime != null) {
-      var apodProvider = Provider.of<ApodProvider>(context, listen: false);
-      apodProvider.changeDate(dateTime);
+      _pageController.jumpToPage(currentDate.day - dateTime.day);
     }
-  }
-
-  @override
-  initState() {
-    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     var settings = Provider.of<Box<dynamic>>(context);
-    var apodProvider = Provider.of<ApodProvider>(context)..getCached();
     bool isDarkTheme = settings.get('isDarkTheme');
     return SafeArea(
       child: Scaffold(
         appBar: _buildAppBar(),
         body: PageView.builder(
-          onPageChanged: (index) {
-            apodProvider.changeDate(DateTime.now().subtract(Duration(days: index)));
-          },
+          controller: _pageController,
           itemBuilder: (BuildContext context, int index) {
-            String cachedData = apodProvider.cachedData;
-            return FutureBuilder<String>(
-              future: apodProvider.getApodData(),
-              builder: (BuildContext context, AsyncSnapshot<String> responseSnapshot) {
-                String responseData;
-                if (responseSnapshot.hasError || responseSnapshot.data == null) {
-                  // if API ended up with error check local storage
-                  if (cachedData == null) {
-                    // if no data in local storage show loading view
-                    return Center(child: CircularProgressIndicator());
-                  } else {
-                    // if local data available use it
-                    responseData = cachedData;
-                  }
-                } else if (responseSnapshot.connectionState == ConnectionState.waiting) {
-                  responseData = cachedData;
-                } else {
-                  responseData = responseSnapshot.data;
+            return ChangeNotifierProvider<ApodProvider>(
+              create: (context) => ApodProvider(
+                date: DateTime.now().subtract(Duration(days: index)),
+              )..getApodData(),
+              builder: (BuildContext context, Widget widget) {
+                final apodProvider = Provider.of<ApodProvider>(context);
+                final responseData = apodProvider.responseData;
+                if (responseData == null) {
+                  return Center(child: CircularProgressIndicator());
                 }
-                // Displays data stored in locally until API returns data
                 var apodData = Apod.fromMap(json.decode(responseData));
                 return SingleChildScrollView(
                   child: Column(
@@ -82,8 +61,7 @@ class _ApodPageState extends State<ApodPage> {
                               Container(
                                 child: Padding(
                                   padding: const EdgeInsets.all(3.0),
-                                  child: Text(
-                                      '${apodProvider.day}-${apodProvider.month}-${apodProvider.year}'),
+                                  child: Text(apodProvider.getDateString()),
                                 ),
                                 decoration: BoxDecoration(
                                     border: Border.all(width: 1.5)),
@@ -129,7 +107,6 @@ class _ApodPageState extends State<ApodPage> {
     );
   }
 
-  // This method builds the AppBar.
   AppBar _buildAppBar() {
     return AppBar(
       backgroundColor: Color(0xff121212),
@@ -150,7 +127,6 @@ class _ApodPageState extends State<ApodPage> {
     );
   }
 
-  // This method builds the title of current apod.
   Padding _buildApodTitle(Apod apodData) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 5),
@@ -166,7 +142,6 @@ class _ApodPageState extends State<ApodPage> {
     );
   }
 
-  // This method builds image of current apod if present.
   Container _buildApodImage(Apod apodData, BuildContext context) {
     return Container(
       padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
@@ -202,7 +177,6 @@ class _ApodPageState extends State<ApodPage> {
     );
   }
 
-  // This method builds the information widget of current apod.
   Padding _buildApodInfo(Apod apodData) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
